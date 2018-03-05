@@ -28,15 +28,15 @@ public class PlayerMove : NetworkBehaviour
 		//	print ("I am the host");
 		
 		
-		var x = Input.GetAxis("Horizontal")*0.1f;
-		var z = Input.GetAxis("Vertical")*0.1f;
+		//var x = Input.GetAxis("Horizontal")*0.1f;
+		//var z = Input.GetAxis("Vertical")*0.1f;
 
-		transform.Translate(x, 0, z);
+		//transform.Translate(x, 0, z);
 
 		ray = Camera.main.ScreenPointToRay(Input.mousePosition);
          if(Physics.Raycast(ray, out hit, 100, mask.value))
          {
-             print (hit.collider.name);
+             //print (hit.collider.name);
 
              Vector3 boardLoc = new Vector3(hit.collider.gameObject.transform.position.x, 0.25f,hit.collider.gameObject.transform.position.z);
 
