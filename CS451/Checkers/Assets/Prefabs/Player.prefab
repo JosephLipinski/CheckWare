@@ -142,6 +142,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   myId: {fileID: 0}
+  mask:
+    serializedVersion: 2
+    m_Bits: 2048
+  smooth: 15
 --- !u!114 &114991374343264064
 MonoBehaviour:
   m_ObjectHideFlags: 1
