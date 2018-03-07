@@ -6,14 +6,14 @@ public class BoardManager : MonoBehaviour {
 
 	List<List<BoardLocation>> board;
 
-	bool currentPlayer = true;
+	bool currentPlayer = false;
 
 	public GameObject blueChecker, blueKing, purpleChecker, purpleKing;
 
 	// Use this for initialization
 	void Start () {
 		setupBoard();
-		getLegalMoves("F1");
+		getLegalMoves("C2");
 
 	}
 	
@@ -28,7 +28,7 @@ public class BoardManager : MonoBehaviour {
 			new char[]{' ', '1', ' ', '1', ' ', '1', ' ', '1'}, //A
 			new char[]{'1', ' ', '1', ' ', '1', ' ', '1', ' '}, //B
 			new char[]{' ', '1', ' ', '1', ' ', '1', ' ', '1'}, //C
-			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //D
+			new char[]{' ', ' ', '2', ' ', ' ', ' ', ' ', ' '}, //D
 			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //E
 			new char[]{'2', ' ', '2', ' ', '2', ' ', '2', ' '}, //F
 			new char[]{' ', '2', ' ', '2', ' ', '2', ' ', '2'}, //G
@@ -99,7 +99,7 @@ public class BoardManager : MonoBehaviour {
 	}
 
 	bool inRange(int x, int min, int max){
-		return x > min && x < max; 
+		return x >= min && x < max; 
 	}
 
 	//get legal moves for a piece
