@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class BoardManager : MonoBehaviour {
@@ -13,7 +14,8 @@ public class BoardManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		setupBoard();
-		getLegalMoves("C2");
+		//getLegalMoves("C2");
+		hasLegalMoves();
 
 	}
 	
@@ -28,7 +30,7 @@ public class BoardManager : MonoBehaviour {
 			new char[]{' ', '1', ' ', '1', ' ', '1', ' ', '1'}, //A
 			new char[]{'1', ' ', '1', ' ', '1', ' ', '1', ' '}, //B
 			new char[]{' ', '1', ' ', '1', ' ', '1', ' ', '1'}, //C
-			new char[]{' ', ' ', '2', ' ', ' ', ' ', ' ', ' '}, //D
+			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //D
 			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //E
 			new char[]{'2', ' ', '2', ' ', '2', ' ', '2', ' '}, //F
 			new char[]{' ', '2', ' ', '2', ' ', '2', ' ', '2'}, //G
@@ -56,17 +58,27 @@ public class BoardManager : MonoBehaviour {
 		}
 	}
 
+	bool hasLegalMoves(){
+		// List<BoardLocation> allLegalMoves = new List<BoardLocation>();
+		bool hasLegalMove = false;
+		foreach(Transform child in transform){
+			List<BoardLocation> locationMoves = getLegalMoves(child.name);
+			if(locationMoves.Count > 0) hasLegalMove = true;
+		}
+		print(hasLegalMove);
+		return hasLegalMove;
+	}	
+
 	List<BoardLocation> getLegalMoves(string location){
 		BoardLocation boardLocation = getLocation(location);
 		List<BoardLocation> legalMoves = new List<BoardLocation>();
 		if(!boardLocation.empty()){ //if there is a piece at this location
-			
-			PieceHandler ph = boardLocation.piece.GetComponent<PieceHandler>();
-			int i = boardLocation.i;
-			int j = boardLocation.j;
 
+			PieceHandler ph = boardLocation.piece.GetComponent<PieceHandler>();
 			if(ph.player == currentPlayer){
-				
+				int i = boardLocation.i;
+				int j = boardLocation.j;
+
 				calculateLegalMoves(ref i, ref j, ref legalMoves, ref ph, 1, 1);  //if the NE space is empty
 				calculateLegalMoves(ref i, ref j, ref legalMoves, ref ph, 1, -1); //if the NW space is empty
 				if(ph.king == true){
@@ -76,7 +88,7 @@ public class BoardManager : MonoBehaviour {
 			}
 		}
 		
-		print("CURRENT LOCATION: ("+boardLocation.i+", " +boardLocation.j+")");		
+		//print("CURRENT LOCATION: ("+boardLocation.i+", " +boardLocation.j+")");		
 		if(legalMoves.Count == 1){
 			print("LEGAL LOCATION 1: ("+legalMoves[0].i+", " +legalMoves[0].j+")");
 		}
