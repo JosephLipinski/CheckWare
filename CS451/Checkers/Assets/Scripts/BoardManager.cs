@@ -17,8 +17,6 @@ public class BoardManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		setupBoard();
-		//getLegalMoves("C2");
-		//hasLegalMoves();
 
 	}
 	
@@ -26,17 +24,18 @@ public class BoardManager : MonoBehaviour {
 	void Update () {
 	}
 
+	//Maps 2d char array to a 2d list of BoardLocations that make up the board
 	void setupBoard() {
 
 		char[][] boardSetup = new char[][] {
 			new char[]{' ', '1', ' ', '1', ' ', '1', ' ', '1'}, //A
 			new char[]{'1', ' ', '1', ' ', '1', ' ', '1', ' '}, //B
 			new char[]{' ', '1', ' ', '1', ' ', '1', ' ', '1'}, //C
-			new char[]{' ', ' ', '2', ' ', ' ', ' ', ' ', ' '}, //D
+			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //D
 			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //E
 			new char[]{'2', ' ', '2', ' ', '2', ' ', '2', ' '}, //F
-			new char[]{' ', '2', ' ', '2', ' ', '2', ' ', '2'}, //G
-			new char[]{'2', ' ', '2', ' ', '2', ' ', '2', ' '}  //H
+			new char[]{' ', '1', ' ', '2', ' ', '2', ' ', '2'}, //G
+			new char[]{' ', ' ', ' ', ' ', ' ', ' ', '2', ' '}  //H
 		};
 
 		board = new List<List<BoardLocation>>();
@@ -60,8 +59,8 @@ public class BoardManager : MonoBehaviour {
 		}
 	}
 
+	//Looks through all board locations and sees if there are possible moves
 	public bool hasLegalMoves(){
-		// List<BoardLocation> allLegalMoves = new List<BoardLocation>();
 		bool hasLegalMove = false;
 		foreach(Transform child in transform){
 			List<PieceMove> locationMoves = getLegalMoves(child.name);
@@ -71,6 +70,7 @@ public class BoardManager : MonoBehaviour {
 		return hasLegalMove;
 	}	
 
+	//Looks at each diagonal movements and sees if it is a legal movement and adds it to a list of PieceMoves
 	public List<PieceMove> getLegalMoves(string location){
 		BoardLocation boardLocation = getLocation(location);
 		List<PieceMove> legalMoves = new List<PieceMove>();
@@ -91,7 +91,6 @@ public class BoardManager : MonoBehaviour {
 			selectedPiece = boardLocation;
 		}
 		
-		//print("CURRENT LOCATION: ("+boardLocation.i+", " +boardLocation.j+")");		
 		if(legalMoves.Count == 1){
 			print("LEGAL LOCATION 1: ("+legalMoves[0].moveTo.i+", " +legalMoves[0].moveTo.j+")");
 		}
@@ -105,36 +104,48 @@ public class BoardManager : MonoBehaviour {
 		return legalMoves;
 	}
 
+	//Moves piece to location. If it is an enemy it destroys the piece. If it moves to and edge of board, it kings the piece.
 	public void movePiece(string location){
 		PieceMove move = getMove(location); //Converts string to PieceMove
 		if(move != null){ //ugly, but probably avoiding bugs 
-			
-			//Reassigns reference
-			move.moveTo.piece = selectedPiece.piece;
-			selectedPiece.piece = null;
-			
-			//Moves the piece
-			move.moveTo.piece.GetComponent<PieceHandler>().target = move.moveTo.boardLocation.position;	
-			move.moveTo.piece.GetComponent<PieceHandler>().currentLerpTime = 0f;
-
-			//Kills enemy
+			//Kills enemy piece
 			if(move.pieceTaken != null){
 				Destroy(move.pieceTaken.piece, 0.25f);
 				move.pieceTaken.piece = null;
 			}
 
+			//Kings piece
+			if(move.kingPiece && currentPlayer == false){
+				selectedPiece.piece.GetComponent<PieceHandler>().instantiateKing = true;
+			}		
 
+
+			//Moves the piece
+			selectedPiece.piece.GetComponent<PieceHandler>().target = move.moveTo.boardLocation.transform.position;	
+			selectedPiece.piece.GetComponent<PieceHandler>().currentLerpTime = 0f;
+
+
+			//Reassigns reference
+			move.moveTo.piece = selectedPiece.piece;			
+			selectedPiece.piece = null;
+
+
+			
+			
 		}	
+		//resets the board values.
 		resetBoardDisplay();
 		selectedPiece = null;
 		currentLegalMoves.Clear();
 	}
 
+	//Checks if a location is empty.
 	public bool isLocationEmpty(string location){
 		BoardLocation boardLocation = getLocation(location);
 		return boardLocation.isEmpty();
 	} 
 
+	//Checks if a location is part of the public property currentLegalMoves
 	public bool isCurrentLegalMove(string location){	
 		foreach(PieceMove move in currentLegalMoves){
 			if(move.moveTo.boardLocation.name == location){
@@ -144,6 +155,7 @@ public class BoardManager : MonoBehaviour {
 		return false;
 	}
 
+	//Resets the color of the board
 	public void resetBoardDisplay(){
 		for(int i = 0; i < 8; i++){
 			for(int j = 0; j < 8; j++){
@@ -157,6 +169,7 @@ public class BoardManager : MonoBehaviour {
 		
 	}
 
+	//Makes selected location show all legal moves in green
 	public void displayLegalMoves(List<PieceMove> moves){
 		resetBoardDisplay();
 		foreach(PieceMove move in moves){
@@ -164,20 +177,19 @@ public class BoardManager : MonoBehaviour {
 		}
 	}
 
+	//Populates the legalMoves reference with legal moves based on the diagonal direction put into the parameters.
 	void calculateLegalMoves(ref int i, ref int j, ref List<PieceMove> legalMoves, ref PieceHandler ph, int iOffset, int jOffset){
 		int playerModifier = currentPlayer ? -1 : 1; //If its player2 go in opposite direction
 		iOffset *= playerModifier;
 		jOffset *= playerModifier;
 		if(inRange(i + iOffset, 0, 8) && inRange(j + jOffset, 0, 8) && board[i + iOffset][j + jOffset].isEmpty()){  //checks if diagonal is on board and if the space is empty
 			legalMoves.Add(new PieceMove(board[i + iOffset][j + jOffset]));
-			if(i+iOffset == 0 || i+iOffset == 7){
-				print("IT KING");
+			if(i+iOffset == 0 || i+iOffset == 7 && ph.king == false){
 				legalMoves[legalMoves.Count-1].kingPiece = true;
 			}
 		} else if(inRange(i + iOffset, 0, 8) && inRange(j + jOffset, 0, 8) && board[i + iOffset][j + jOffset].hasEnemy(currentPlayer) && inRange(i + (iOffset*2), 0, 8) && inRange(j + (jOffset*2), 0, 8) && board[i + (iOffset*2)][j + (jOffset*2)].isEmpty()){ //checks if diagonal is on board and space is enemy, then if the next diagonal is on board and empty
 			legalMoves.Add(new PieceMove(board[i + (iOffset*2)][j + (jOffset*2)], board[i + iOffset][j + jOffset])); 
-			if(i + (iOffset*2) == 0 || i + (iOffset*2) == 7){
-				print("IT KING");
+			if(i + (iOffset*2) == 0 || i + (iOffset*2) == 7 && ph.king == false){
 				legalMoves[legalMoves.Count-1].kingPiece = true;
 			}
 		}

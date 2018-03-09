@@ -34,14 +34,15 @@ public class PlayerMove : NetworkBehaviour
 		if (!isLocalPlayer)
 			return;
 		//if (isClient)
-		//	print ("I am the host");
 		
 		
 		//var x = Input.GetAxis("Horizontal")*0.1f;
 		//var z = Input.GetAxis("Vertical")*0.1f;
-
 		//transform.Translate(x, 0, z);
 
+
+
+		//Gets raycast of mouse to look at Board layer. If it doesn't hit the board it gets location on a generated plane.  
 		ray = Camera.main.ScreenPointToRay(Input.mousePosition);
          if(Physics.Raycast(ray, out hit, 100, mask.value)) // mouse over
          {
@@ -60,10 +61,12 @@ public class PlayerMove : NetworkBehaviour
 
 		 if (Input.GetMouseButtonDown(0)){ //left click
 
+			//If you click one of your pieces
 			if(!bm.isLocationEmpty(boardLocationName)){
 				bm.getLegalMoves(boardLocationName);
 			}
 
+			//If you click the green legal space 
 			if(bm.isCurrentLegalMove(boardLocationName)){
 				bm.movePiece(boardLocationName);
 			}
