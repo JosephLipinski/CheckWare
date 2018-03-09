@@ -6,8 +6,11 @@ using UnityEngine;
 public class BoardManager : MonoBehaviour {
 
 	List<List<BoardLocation>> board;
-
+	List<BoardLocation> currentLegalMoves;
+	BoardLocation selectedPiece;
+	public float smooth = 5.0f;
 	bool currentPlayer = false;
+
 
 	public GameObject blueChecker, blueKing, purpleChecker, purpleKing;
 
@@ -15,13 +18,12 @@ public class BoardManager : MonoBehaviour {
 	void Start () {
 		setupBoard();
 		//getLegalMoves("C2");
-		hasLegalMoves();
+		//hasLegalMoves();
 
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		
 	}
 
 	void setupBoard() {
@@ -44,7 +46,7 @@ public class BoardManager : MonoBehaviour {
 			board.Add(new List<BoardLocation>());
 			for(int j = 0; j < 8; j++){
 				Transform child = transform.GetChild((i*8) + j);
-				Vector3 spawnPosition = child.transform.position + new Vector3 (0f, 1f, 0f);
+				Vector3 spawnPosition = child.transform.position + new Vector3 (0f, 0.6f, 0f);
 				if(boardSetup[i][j] == '1'){
 					GameObject P1_Piece = Instantiate (blueChecker, spawnPosition, Quaternion.identity);
 					board[i].Add(new BoardLocation(child, P1_Piece, i, j)); // stores cube location and player1 piece
@@ -58,7 +60,7 @@ public class BoardManager : MonoBehaviour {
 		}
 	}
 
-	bool hasLegalMoves(){
+	public bool hasLegalMoves(){
 		// List<BoardLocation> allLegalMoves = new List<BoardLocation>();
 		bool hasLegalMove = false;
 		foreach(Transform child in transform){
@@ -69,10 +71,10 @@ public class BoardManager : MonoBehaviour {
 		return hasLegalMove;
 	}	
 
-	List<BoardLocation> getLegalMoves(string location){
+	public List<BoardLocation> getLegalMoves(string location){
 		BoardLocation boardLocation = getLocation(location);
 		List<BoardLocation> legalMoves = new List<BoardLocation>();
-		if(!boardLocation.empty()){ //if there is a piece at this location
+		if(!boardLocation.isEmpty()){ //if there is a piece at this location
 
 			PieceHandler ph = boardLocation.piece.GetComponent<PieceHandler>();
 			if(ph.player == currentPlayer){
@@ -86,6 +88,7 @@ public class BoardManager : MonoBehaviour {
 					calculateLegalMoves(ref i, ref j, ref legalMoves, ref  ph, -1, -1); //if the SW space is empty
 				}
 			}
+			selectedPiece = boardLocation;
 		}
 		
 		//print("CURRENT LOCATION: ("+boardLocation.i+", " +boardLocation.j+")");		
@@ -96,16 +99,61 @@ public class BoardManager : MonoBehaviour {
 			print("LEGAL LOCATION 1: ("+legalMoves[0].i+", " +legalMoves[0].j+")");
 			print("LEGAL LOCATION 2: ("+legalMoves[1].i+", " +legalMoves[1].j+")");
 		}
+
+		currentLegalMoves = legalMoves;
+		displayLegalMoves(legalMoves);
 		return legalMoves;
+	}
+
+	public void movePiece(string location){
+		BoardLocation bl = getLocation(location);
+		//Transform pieceTransform = selectedPiece.piece.transform;
+		bl.piece = selectedPiece.piece;
+		selectedPiece.piece = null;
+		bl.piece.GetComponent<PieceHandler>().target = bl.boardLocation.position;	
+		bl.piece.GetComponent<PieceHandler>().currentLerpTime = 0f;	
+	}
+
+	public bool isLocationEmpty(string location){
+		BoardLocation boardLocation = getLocation(location);
+		return boardLocation.isEmpty();
+	} 
+
+	public bool isCurrentLegalMove(string location){	
+		foreach(BoardLocation move in currentLegalMoves){
+			if(move.boardLocation.name == location){
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void resetBoardDisplay(){
+		for(int i = 0; i < 8; i++){
+			for(int j = 0; j < 8; j++){
+				if(((i*8) + j+i) % 2 == 0){
+					board[i][j].boardLocation.gameObject.GetComponent<MeshRenderer>().material.color = Color.white;		
+				} else {
+					board[i][j].boardLocation.gameObject.GetComponent<MeshRenderer>().material.color = Color.black;															
+				}
+			}
+		}
+	}
+
+	public void displayLegalMoves(List<BoardLocation> moves){
+		resetBoardDisplay();
+		foreach(BoardLocation move in moves){
+			move.boardLocation.gameObject.GetComponent<MeshRenderer>().material.color = Color.green;
+		}
 	}
 
 	void calculateLegalMoves(ref int i, ref int j, ref List<BoardLocation> legalMoves, ref PieceHandler ph, int iOffset, int jOffset){
 		int playerModifier = currentPlayer ? -1 : 1; //If its player2 go in opposite direction
 		iOffset *= playerModifier;
 		jOffset *= playerModifier;
-		if(inRange(i + iOffset, 0, 8) && inRange(j + jOffset, 0, 8) && board[i + iOffset][j + jOffset].empty()){  //checks if diagonal is on board and if the space is empty
+		if(inRange(i + iOffset, 0, 8) && inRange(j + jOffset, 0, 8) && board[i + iOffset][j + jOffset].isEmpty()){  //checks if diagonal is on board and if the space is empty
 			legalMoves.Add(board[i + iOffset][j + jOffset]);
-		} else if(inRange(i + iOffset, 0, 8) && inRange(j + jOffset, 0, 8) && board[i + iOffset][j + jOffset].hasEnemy(currentPlayer) && inRange(i + (iOffset*2), 0, 8) && inRange(j + (jOffset*2), 0, 8) && board[i + (iOffset*2)][j + (jOffset*2)].empty()){ //checks if diagonal is on board and space is enemy, then if the next diagonal is on board and empty
+		} else if(inRange(i + iOffset, 0, 8) && inRange(j + jOffset, 0, 8) && board[i + iOffset][j + jOffset].hasEnemy(currentPlayer) && inRange(i + (iOffset*2), 0, 8) && inRange(j + (jOffset*2), 0, 8) && board[i + (iOffset*2)][j + (jOffset*2)].isEmpty()){ //checks if diagonal is on board and space is enemy, then if the next diagonal is on board and empty
 			legalMoves.Add(board[i + (iOffset*2)][j + (jOffset*2)]); 
 		}
 	}
@@ -113,10 +161,6 @@ public class BoardManager : MonoBehaviour {
 	bool inRange(int x, int min, int max){
 		return x >= min && x < max; 
 	}
-
-	//get legal moves for a piece
-	//get all legal moves for all pieces
-	//display legal moves for a piece
 
 	BoardLocation getLocation(string location){
 		//char letter = location[0];

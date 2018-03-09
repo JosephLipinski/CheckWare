@@ -22,7 +22,7 @@ public class BoardLocation {
 
 	}
 
-	public bool empty(){
+	public bool isEmpty(){
 		return piece == null;
 	}
 

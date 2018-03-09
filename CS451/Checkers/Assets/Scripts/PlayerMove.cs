@@ -9,13 +9,22 @@ public class PlayerMove : NetworkBehaviour
 	public NetworkIdentity myId;
 	public LayerMask mask = -1;
 	public float smooth = 5.0f;
-	
+
+	GameObject board;
+	BoardManager bm;
+	Vector3 boardLoc;
+	string boardLocationName;
+
 	public override void OnStartLocalPlayer()
 	{
 		GetComponent<MeshRenderer>().material.color = Color.red;
 	}
 	void Start()
 	{
+
+		board = GameObject.Find("Board");
+		bm = board.GetComponent<BoardManager>();
+		
 		if (isServer)
 			GetComponent<MeshRenderer>().material.color = Color.black;
 	}
@@ -34,17 +43,33 @@ public class PlayerMove : NetworkBehaviour
 		//transform.Translate(x, 0, z);
 
 		ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-         if(Physics.Raycast(ray, out hit, 100, mask.value))
+         if(Physics.Raycast(ray, out hit, 100, mask.value)) // mouse over
          {
-             //print (hit.collider.name);
+	    	boardLoc = new Vector3(hit.collider.gameObject.transform.position.x, 0.25f,hit.collider.gameObject.transform.position.z);
+			 boardLocationName = hit.collider.name;	
+			 transform.position = Vector3.Lerp (transform.position, boardLoc, Time.deltaTime * smooth);		 
+         } else {
+			 Plane hPlane = new Plane(Vector3.up, Vector3.zero);
+			 float distance = 0; 
+			if (hPlane.Raycast(ray, out distance)){
+				transform.position =  Vector3.Lerp (transform.position, ray.GetPoint(distance), Time.deltaTime * smooth);
+   			}
+		 }
+        	
+		 
 
-             Vector3 boardLoc = new Vector3(hit.collider.gameObject.transform.position.x, 0.25f,hit.collider.gameObject.transform.position.z);
+		 if (Input.GetMouseButtonDown(0)){ //left click
 
-             //transform.SetPositionAndRotation(boardLoc, transform.rotation);
+			if(!bm.isLocationEmpty(boardLocationName)){
+				bm.getLegalMoves(boardLocationName);
+			}
 
-             transform.position = Vector3.Lerp (transform.position, boardLoc, Time.deltaTime * smooth);
+			if(bm.isCurrentLegalMove(boardLocationName)){
+				bm.movePiece(boardLocationName);
+			}
+		}
 
-
-         }
+		
+		
 	}
 }
