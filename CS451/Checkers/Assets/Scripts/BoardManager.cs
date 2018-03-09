@@ -6,7 +6,7 @@ using UnityEngine;
 public class BoardManager : MonoBehaviour {
 
 	List<List<BoardLocation>> board;
-	List<BoardLocation> currentLegalMoves;
+	List<PieceMove> currentLegalMoves;
 	BoardLocation selectedPiece;
 	public float smooth = 5.0f;
 	bool currentPlayer = false;
@@ -32,7 +32,7 @@ public class BoardManager : MonoBehaviour {
 			new char[]{' ', '1', ' ', '1', ' ', '1', ' ', '1'}, //A
 			new char[]{'1', ' ', '1', ' ', '1', ' ', '1', ' '}, //B
 			new char[]{' ', '1', ' ', '1', ' ', '1', ' ', '1'}, //C
-			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //D
+			new char[]{' ', ' ', '2', ' ', ' ', ' ', ' ', ' '}, //D
 			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //E
 			new char[]{'2', ' ', '2', ' ', '2', ' ', '2', ' '}, //F
 			new char[]{' ', '2', ' ', '2', ' ', '2', ' ', '2'}, //G
@@ -64,16 +64,16 @@ public class BoardManager : MonoBehaviour {
 		// List<BoardLocation> allLegalMoves = new List<BoardLocation>();
 		bool hasLegalMove = false;
 		foreach(Transform child in transform){
-			List<BoardLocation> locationMoves = getLegalMoves(child.name);
+			List<PieceMove> locationMoves = getLegalMoves(child.name);
 			if(locationMoves.Count > 0) hasLegalMove = true;
 		}
 		print(hasLegalMove);
 		return hasLegalMove;
 	}	
 
-	public List<BoardLocation> getLegalMoves(string location){
+	public List<PieceMove> getLegalMoves(string location){
 		BoardLocation boardLocation = getLocation(location);
-		List<BoardLocation> legalMoves = new List<BoardLocation>();
+		List<PieceMove> legalMoves = new List<PieceMove>();
 		if(!boardLocation.isEmpty()){ //if there is a piece at this location
 
 			PieceHandler ph = boardLocation.piece.GetComponent<PieceHandler>();
@@ -93,11 +93,11 @@ public class BoardManager : MonoBehaviour {
 		
 		//print("CURRENT LOCATION: ("+boardLocation.i+", " +boardLocation.j+")");		
 		if(legalMoves.Count == 1){
-			print("LEGAL LOCATION 1: ("+legalMoves[0].i+", " +legalMoves[0].j+")");
+			print("LEGAL LOCATION 1: ("+legalMoves[0].moveTo.i+", " +legalMoves[0].moveTo.j+")");
 		}
 		if(legalMoves.Count == 2){
-			print("LEGAL LOCATION 1: ("+legalMoves[0].i+", " +legalMoves[0].j+")");
-			print("LEGAL LOCATION 2: ("+legalMoves[1].i+", " +legalMoves[1].j+")");
+			print("LEGAL LOCATION 1: ("+legalMoves[0].moveTo.i+", " +legalMoves[0].moveTo.j+")");
+			print("LEGAL LOCATION 2: ("+legalMoves[1].moveTo.i+", " +legalMoves[1].moveTo.j+")");
 		}
 
 		currentLegalMoves = legalMoves;
@@ -106,12 +106,28 @@ public class BoardManager : MonoBehaviour {
 	}
 
 	public void movePiece(string location){
-		BoardLocation bl = getLocation(location);
-		//Transform pieceTransform = selectedPiece.piece.transform;
-		bl.piece = selectedPiece.piece;
-		selectedPiece.piece = null;
-		bl.piece.GetComponent<PieceHandler>().target = bl.boardLocation.position;	
-		bl.piece.GetComponent<PieceHandler>().currentLerpTime = 0f;	
+		PieceMove move = getMove(location); //Converts string to PieceMove
+		if(move != null){ //ugly, but probably avoiding bugs 
+			
+			//Reassigns reference
+			move.moveTo.piece = selectedPiece.piece;
+			selectedPiece.piece = null;
+			
+			//Moves the piece
+			move.moveTo.piece.GetComponent<PieceHandler>().target = move.moveTo.boardLocation.position;	
+			move.moveTo.piece.GetComponent<PieceHandler>().currentLerpTime = 0f;
+
+			//Kills enemy
+			if(move.pieceTaken != null){
+				Destroy(move.pieceTaken.piece, 0.25f);
+				move.pieceTaken.piece = null;
+			}
+
+
+		}	
+		resetBoardDisplay();
+		selectedPiece = null;
+		currentLegalMoves.Clear();
 	}
 
 	public bool isLocationEmpty(string location){
@@ -120,8 +136,8 @@ public class BoardManager : MonoBehaviour {
 	} 
 
 	public bool isCurrentLegalMove(string location){	
-		foreach(BoardLocation move in currentLegalMoves){
-			if(move.boardLocation.name == location){
+		foreach(PieceMove move in currentLegalMoves){
+			if(move.moveTo.boardLocation.name == location){
 				return true;
 			}
 		}
@@ -138,23 +154,32 @@ public class BoardManager : MonoBehaviour {
 				}
 			}
 		}
+		
 	}
 
-	public void displayLegalMoves(List<BoardLocation> moves){
+	public void displayLegalMoves(List<PieceMove> moves){
 		resetBoardDisplay();
-		foreach(BoardLocation move in moves){
-			move.boardLocation.gameObject.GetComponent<MeshRenderer>().material.color = Color.green;
+		foreach(PieceMove move in moves){
+			move.moveTo.boardLocation.gameObject.GetComponent<MeshRenderer>().material.color = Color.green;
 		}
 	}
 
-	void calculateLegalMoves(ref int i, ref int j, ref List<BoardLocation> legalMoves, ref PieceHandler ph, int iOffset, int jOffset){
+	void calculateLegalMoves(ref int i, ref int j, ref List<PieceMove> legalMoves, ref PieceHandler ph, int iOffset, int jOffset){
 		int playerModifier = currentPlayer ? -1 : 1; //If its player2 go in opposite direction
 		iOffset *= playerModifier;
 		jOffset *= playerModifier;
 		if(inRange(i + iOffset, 0, 8) && inRange(j + jOffset, 0, 8) && board[i + iOffset][j + jOffset].isEmpty()){  //checks if diagonal is on board and if the space is empty
-			legalMoves.Add(board[i + iOffset][j + jOffset]);
+			legalMoves.Add(new PieceMove(board[i + iOffset][j + jOffset]));
+			if(i+iOffset == 0 || i+iOffset == 7){
+				print("IT KING");
+				legalMoves[legalMoves.Count-1].kingPiece = true;
+			}
 		} else if(inRange(i + iOffset, 0, 8) && inRange(j + jOffset, 0, 8) && board[i + iOffset][j + jOffset].hasEnemy(currentPlayer) && inRange(i + (iOffset*2), 0, 8) && inRange(j + (jOffset*2), 0, 8) && board[i + (iOffset*2)][j + (jOffset*2)].isEmpty()){ //checks if diagonal is on board and space is enemy, then if the next diagonal is on board and empty
-			legalMoves.Add(board[i + (iOffset*2)][j + (jOffset*2)]); 
+			legalMoves.Add(new PieceMove(board[i + (iOffset*2)][j + (jOffset*2)], board[i + iOffset][j + jOffset])); 
+			if(i + (iOffset*2) == 0 || i + (iOffset*2) == 7){
+				print("IT KING");
+				legalMoves[legalMoves.Count-1].kingPiece = true;
+			}
 		}
 	}
 
@@ -167,6 +192,17 @@ public class BoardManager : MonoBehaviour {
 		int x = location[0] - 65;
 		int z = location[1] - 49;
 		return board[x][z];
+	}
+
+	PieceMove getMove (string location){
+		BoardLocation boardLocation = getLocation(location);
+		// PieceMove moveMatch;
+		foreach (PieceMove move in currentLegalMoves){
+			if(move.moveTo.Equals(boardLocation)){ //checks if its the same reference/pointer
+				return move;
+			}
+		}
+		return null;
 	}
 
 }

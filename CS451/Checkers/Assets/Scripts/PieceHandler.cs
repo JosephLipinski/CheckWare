@@ -37,6 +37,11 @@ public class PieceHandler : MonoBehaviour {
 		transform.position = Vector3.Lerp( transform.position, target, easeInOut(currentLerpTime));
 	}
 
+	public void movePiece(GameObject piece, Vector3 targetPos){
+		target = targetPos;	
+		currentLerpTime = 0f;
+	}
+
 	public static float easeInOut(float t, float e = 2f)
     {
         return Mathf.Pow(t, e) / (Mathf.Pow(t, e) + Mathf.Pow(1f - t, e));
