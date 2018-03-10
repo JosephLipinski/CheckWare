@@ -34,8 +34,8 @@ public class BoardManager : MonoBehaviour {
 			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //D
 			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //E
 			new char[]{'2', ' ', '2', ' ', '2', ' ', '2', ' '}, //F
-			new char[]{' ', '1', ' ', '2', ' ', '2', ' ', '2'}, //G
-			new char[]{' ', ' ', ' ', ' ', ' ', ' ', '2', ' '}  //H
+			new char[]{' ', '2', ' ', '2', ' ', '2', ' ', '2'}, //G
+			new char[]{'2', ' ', '2', ' ', '2', ' ', '2', ' '}  //H
 		};
 
 		board = new List<List<BoardLocation>>();
