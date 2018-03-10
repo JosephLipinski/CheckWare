@@ -14,10 +14,12 @@ public class PlayerMove : NetworkBehaviour
 	BoardManager bm;
 	Vector3 boardLoc;
 	string boardLocationName;
+	public Material blue;
+	public Material purple;
 
 	public override void OnStartLocalPlayer()
 	{
-		GetComponent<MeshRenderer>().material.color = Color.red;
+	//			GetComponent<MeshRenderer>().material.color = Color.red;
 	}
 	void Start()
 	{
@@ -26,7 +28,11 @@ public class PlayerMove : NetworkBehaviour
 		bm = board.GetComponent<BoardManager>();
 		
 		if (isServer)
-			GetComponent<MeshRenderer>().material.color = Color.black;
+			GetComponent<MeshRenderer> ().material.color = blue.color;
+		else {
+			GetComponent<MeshRenderer> ().material.color = purple.color;
+
+		}
 	}
 
 	void Update()

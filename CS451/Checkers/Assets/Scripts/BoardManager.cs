@@ -9,7 +9,7 @@ public class BoardManager : MonoBehaviour {
 	List<PieceMove> currentLegalMoves;
 	BoardLocation selectedPiece;
 	public float smooth = 5.0f;
-	bool currentPlayer = false;
+	bool currentPlayer = true;
 
 
 	public GameObject blueChecker, blueKing, purpleChecker, purpleKing;
