@@ -6,6 +6,7 @@ public class BoardLocation {
 
 	public Transform boardLocation;
 	public GameObject piece;
+	public string locationName;
 	public int i;
 	public int j;
 

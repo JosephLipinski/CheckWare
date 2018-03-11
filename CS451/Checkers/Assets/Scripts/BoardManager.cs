@@ -29,7 +29,7 @@ public class BoardManager : NetworkBehaviour {
 	}
 
 
-	public void ToggleCurrentPlayer()
+	public void toggleCurrentPlayer()
 	{
 		currentPlayer = !currentPlayer;
 		//Debug.Log (currentPlayer);
@@ -39,8 +39,8 @@ public class BoardManager : NetworkBehaviour {
 	void setupBoard() {
 
 		char[][] boardSetup = new char[][] {
-			new char[]{' ', '1', ' ', '1', ' ', '1', ' ', '1'}, //A
-			new char[]{'1', ' ', '1', ' ', '1', ' ', '1', ' '}, //B
+			new char[]{' ', '1', ' ', '1', ' ', ' ', ' ', ' '}, //A
+			new char[]{'1', ' ', '1', ' ', '1', ' ', '2', ' '}, //B
 			new char[]{' ', '1', ' ', '1', ' ', '1', ' ', '1'}, //C
 			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //D
 			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //E
@@ -74,7 +74,8 @@ public class BoardManager : NetworkBehaviour {
 	public bool hasLegalMoves(){
 		bool hasLegalMove = false;
 		foreach(Transform child in transform){
-			List<PieceMove> locationMoves = getLegalMoves(child.name);
+			BoardLocation boardLocation = getLocation(child.name);		
+			List<PieceMove> locationMoves = getLegalMoves(boardLocation);
 			if(locationMoves.Count > 0) hasLegalMove = true;
 		}
 		print(hasLegalMove);
@@ -101,13 +102,30 @@ public class BoardManager : NetworkBehaviour {
 			}
 			selectedPiece = boardLocation;
 		}
-		
-		if(legalMoves.Count == 1){
-			print("LEGAL LOCATION 1: ("+legalMoves[0].moveTo.i+", " +legalMoves[0].moveTo.j+")");
-		}
-		if(legalMoves.Count == 2){
-			print("LEGAL LOCATION 1: ("+legalMoves[0].moveTo.i+", " +legalMoves[0].moveTo.j+")");
-			print("LEGAL LOCATION 2: ("+legalMoves[1].moveTo.i+", " +legalMoves[1].moveTo.j+")");
+
+		currentLegalMoves = legalMoves;
+		displayLegalMoves(legalMoves);
+		return legalMoves;
+	}
+
+	//Looks at each diagonal movements and sees if it is a legal movement and adds it to a list of PieceMoves
+	public List<PieceMove> getLegalMoves(BoardLocation boardLocation){
+		List<PieceMove> legalMoves = new List<PieceMove>();
+		if(!boardLocation.isEmpty()){ //if there is a piece at this location
+
+			PieceHandler ph = boardLocation.piece.GetComponent<PieceHandler>();
+			if(ph.player == currentPlayer){
+				int i = boardLocation.i;
+				int j = boardLocation.j;
+
+				calculateLegalMoves(ref i, ref j, ref legalMoves, ref ph, 1, 1);  //if the NE space is empty
+				calculateLegalMoves(ref i, ref j, ref legalMoves, ref ph, 1, -1); //if the NW space is empty
+				if(ph.king == true){
+					calculateLegalMoves(ref i, ref j, ref legalMoves, ref ph, -1, 1);  //if the SE space is empty
+					calculateLegalMoves(ref i, ref j, ref legalMoves, ref  ph, -1, -1); //if the SW space is empty
+				}
+			}
+			selectedPiece = boardLocation;
 		}
 
 		currentLegalMoves = legalMoves;
@@ -120,15 +138,20 @@ public class BoardManager : NetworkBehaviour {
 		PieceMove move = getMove(location); //Converts string to PieceMove
 		if(move != null){ //ugly, but probably avoiding bugs 
 			//Kills enemy piece
+
+			List<PieceMove> moveAgain = new List<PieceMove>();
+
 			if(move.pieceTaken != null){
 				Destroy(move.pieceTaken.piece, 0.25f);
 				move.pieceTaken.piece = null;
+
+				moveAgain = getLegalMoves(move.moveTo).Where( x => x.pieceTaken != null).ToList(); //returns a list of moves that involve taking another piece
 			}
 
 			//Kings piece
-			if(move.kingPiece && currentPlayer == false){
-				selectedPiece.piece.GetComponent<PieceHandler>().instantiateKing = true;
-			}		
+			if(move.kingPiece){
+				selectedPiece.piece.GetComponent<PieceHandler>().king = true;
+			}
 
 
 			//Moves the piece
@@ -140,9 +163,8 @@ public class BoardManager : NetworkBehaviour {
 			move.moveTo.piece = selectedPiece.piece;			
 			selectedPiece.piece = null;
 
+			toggleCurrentPlayer();
 
-			
-			
 		}	
 		//resets the board values.
 		resetBoardDisplay();
