@@ -2,14 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Networking;
 
-public class BoardManager : MonoBehaviour {
+public class BoardManager : NetworkBehaviour {
 
 	List<List<BoardLocation>> board;
 	List<PieceMove> currentLegalMoves;
 	BoardLocation selectedPiece;
 	public float smooth = 5.0f;
-	bool currentPlayer = true;
+
+	[SyncVar]
+	public bool currentPlayer = true;
 
 
 	public GameObject blueChecker, blueKing, purpleChecker, purpleKing;
@@ -22,6 +25,14 @@ public class BoardManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		//Debug.Log (currentPlayer);
+	}
+
+
+	public void ToggleCurrentPlayer()
+	{
+		currentPlayer = !currentPlayer;
+		//Debug.Log (currentPlayer);
 	}
 
 	//Maps 2d char array to a 2d list of BoardLocations that make up the board
