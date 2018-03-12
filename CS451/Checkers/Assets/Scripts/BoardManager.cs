@@ -180,9 +180,13 @@ public class BoardManager : NetworkBehaviour {
 
 	//Checks if a location is part of the public property currentLegalMoves
 	public bool isCurrentLegalMove(string location){	
-		foreach(PieceMove move in currentLegalMoves){
-			if(move.moveTo.boardLocation.name == location){
-				return true;
+		BoardLocation boardLocation = getLocation(location);
+		if(currentLegalMoves != null){
+			foreach(PieceMove move in currentLegalMoves){
+				BoardLocation moveLocation = move.moveTo;
+				if(moveLocation == boardLocation){
+					return true; 
+				}
 			}
 		}
 		return false;
