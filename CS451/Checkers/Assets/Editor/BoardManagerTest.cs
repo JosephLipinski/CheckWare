@@ -58,7 +58,7 @@ public class BoardManagerTest {
 		// Calls inRange
 		// Calls displayLegalMoves
 		// Calls resetBoardDisplay
-		List<PieceMove> list = BM1.getLegalMoves ("A1");
+		List<PieceMove> list = BM1.getLegalMoves (BM1.getLocation("A1"));
 	}
 
 	[Test]
