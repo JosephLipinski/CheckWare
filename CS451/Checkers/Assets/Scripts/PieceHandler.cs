@@ -15,9 +15,7 @@ public class PieceHandler : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		target = transform.position;
-		
-			
+		target = transform.position;	
 	}
 	
 	// Update is called once per frame
@@ -40,7 +38,7 @@ public class PieceHandler : MonoBehaviour {
 		transform.position = Vector3.Lerp( transform.position, target, easeInOut(currentLerpTime));
 	}
 
-	public static float easeInOut(float t, float e = 2f)
+	public float easeInOut(float t, float e = 2f)
     {
         return Mathf.Pow(t, e) / (Mathf.Pow(t, e) + Mathf.Pow(1f - t, e));
     }
