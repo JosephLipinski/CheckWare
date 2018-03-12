@@ -35,16 +35,8 @@ public class PlayerMove : NetworkBehaviour
 
 	void Start()
 	{
-
 		board = GameObject.Find("Board");
 		bm = board.GetComponent<BoardManager>();
-		
-		if (isServer)
-			GetComponent<MeshRenderer> ().material.color = blue.color;
-		else {
-			GetComponent<MeshRenderer> ().material.color = purple.color;
-
-		}
 	}
 
 	void Update()
@@ -52,10 +44,10 @@ public class PlayerMove : NetworkBehaviour
 		if (!isLocalPlayer)
 			return;
 
-		if(bm.currentPlayer == true && myColor == colorBlue){
+		if(bm.currentPlayer == true && myColor == colorPurple){
 			hoverOver();
 			leftClick();
-		} else if (bm.currentPlayer == false && myColor == colorPurple){
+		} else if (bm.currentPlayer == false && myColor == colorBlue){
 			hoverOver();
 			leftClick();
 		}
