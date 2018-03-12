@@ -52,7 +52,6 @@ public class PlayerMove : NetworkBehaviour
 
 	void Start()
 	{
-
 		board = GameObject.Find("Board");
 		bm = board.GetComponent<BoardManager>();
 		
@@ -68,16 +67,12 @@ public class PlayerMove : NetworkBehaviour
 		if (!isLocalPlayer)
 			return;
 
-		hoverOver();
-
-		// print(testbool);
-		print(bm.currentPlayer);
-
-		// leftClick();
 
 		if(bm.currentPlayer == true && myColor == colorPurple){
+			hoverOver();
 			leftClick();
 		} else if (bm.currentPlayer == false && myColor == colorBlue){
+			hoverOver();
 			leftClick();
 		}
 	}
