@@ -7,7 +7,7 @@ using UnityEngine.Networking;
 public class BoardManager : NetworkBehaviour {
 
 	List<List<BoardLocation>> board;
-	List<PieceMove> currentLegalMoves;
+	List<PieceMove> currentLegalMoves = new List<PieceMove>();
 	BoardLocation selectedPiece;
 	public float smooth = 5.0f;
 
@@ -42,7 +42,7 @@ public class BoardManager : NetworkBehaviour {
 	
 
 	//Maps 2d char array to a 2d list of BoardLocations that make up the board
-	void setupBoard() {
+	public void setupBoard() {
 
 		char[][] boardSetup = new char[][] {
 			new char[]{' ', '1', ' ', '1', ' ', ' ', ' ', ' '}, //A
