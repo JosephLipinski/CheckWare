@@ -54,12 +54,7 @@ public class PlayerMove : NetworkBehaviour
 	{
 		board = GameObject.Find("Board");
 		bm = board.GetComponent<BoardManager>();
-		
-		if (isServer)
-			GetComponent<MeshRenderer> ().material.color = purple.color;
-		else {
-			GetComponent<MeshRenderer> ().material.color = blue.color;
-		}
+
 	}
 
 	void Update()
