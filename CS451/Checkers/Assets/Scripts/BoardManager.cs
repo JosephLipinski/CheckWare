@@ -131,6 +131,7 @@ public class BoardManager : NetworkBehaviour {
 			//Kings piece
 			if(move.kingPiece){
 				selectedPiece.piece.GetComponent<PieceHandler>().king = true;
+                selectedPiece.piece.transform.GetChild(0).gameObject.active = true;
 			}
 
 
