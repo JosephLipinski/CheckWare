@@ -18,6 +18,23 @@ public class PlayerMove : NetworkBehaviour
 	public Material purple;
 	Color myColor, colorBlue, colorPurple;
 
+
+	bool testbool = false;
+
+	[Command]
+	public void CmdToggleCurrentPlayer() {
+		var objNetId = board.GetComponent<NetworkIdentity> ();        // get the object's network ID
+		objNetId.AssignClientAuthority (connectionToClient);    // assign authority to the player who is changing the color
+		RpcTogglePlease();
+        objNetId.RemoveClientAuthority (connectionToClient);    // remove the authority from the player who changed the color
+
+	}
+
+	[ClientRpc]
+	void RpcTogglePlease() {
+		bm.currentPlayer = !bm.currentPlayer;
+	}
+
 	public override void OnStartLocalPlayer()
 	{
 		colorBlue = blue.color;
@@ -40,10 +57,9 @@ public class PlayerMove : NetworkBehaviour
 		bm = board.GetComponent<BoardManager>();
 		
 		if (isServer)
-			GetComponent<MeshRenderer> ().material.color = blue.color;
-		else {
 			GetComponent<MeshRenderer> ().material.color = purple.color;
-
+		else {
+			GetComponent<MeshRenderer> ().material.color = blue.color;
 		}
 	}
 
@@ -52,14 +68,18 @@ public class PlayerMove : NetworkBehaviour
 		if (!isLocalPlayer)
 			return;
 
-		if(bm.currentPlayer == true && myColor == colorBlue){
-			hoverOver();
+		hoverOver();
+
+		// print(testbool);
+		print(bm.currentPlayer);
+
+		// leftClick();
+
+		if(bm.currentPlayer == true && myColor == colorPurple){
 			leftClick();
-		} else if (bm.currentPlayer == false && myColor == colorPurple){
-			hoverOver();
+		} else if (bm.currentPlayer == false && myColor == colorBlue){
 			leftClick();
 		}
-		
 	}
 
 	void hoverOver(){
@@ -81,16 +101,15 @@ public class PlayerMove : NetworkBehaviour
 
 	void leftClick(){
 		if (Input.GetMouseButtonDown(0)){ //left click
-			//Debug.Log(bm.currentPlayer);
-
-			//If you click one of your pieces
+			// Debug.Log(bm.currentPlayer);
+			// If you click one of your pieces
 			if(boardLocationName != null && !bm.isLocationEmpty(boardLocationName)){
-				bm.getLegalMoves(boardLocationName);
+				bm.getLegalMoves(bm.getLocation(boardLocationName));
 			}
 
-			//If you click the green legal space 
 			if(boardLocationName != null && bm.isCurrentLegalMove(boardLocationName)){
 				bm.movePiece(boardLocationName);
+				CmdToggleCurrentPlayer();				
 			}
 		} 
 	}

@@ -25,15 +25,21 @@ public class BoardManager : NetworkBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
 		//Debug.Log (currentPlayer);
 	}
-
 
 	public void toggleCurrentPlayer()
 	{
 		currentPlayer = !currentPlayer;
-		//Debug.Log (currentPlayer);
+		// Debug.Log (currentPlayer);
 	}
+
+	// [ClientRpc]
+	// void RpcTogglePlease() {
+	// 	toggleCurrentPlayer();
+	// }
+	
 
 	//Maps 2d char array to a 2d list of BoardLocations that make up the board
 	void setupBoard() {
@@ -81,32 +87,6 @@ public class BoardManager : NetworkBehaviour {
 		print(hasLegalMove);
 		return hasLegalMove;
 	}	
-
-	//Looks at each diagonal movements and sees if it is a legal movement and adds it to a list of PieceMoves
-	public List<PieceMove> getLegalMoves(string location){
-		BoardLocation boardLocation = getLocation(location);
-		List<PieceMove> legalMoves = new List<PieceMove>();
-		if(!boardLocation.isEmpty()){ //if there is a piece at this location
-
-			PieceHandler ph = boardLocation.piece.GetComponent<PieceHandler>();
-			if(ph.player == currentPlayer){
-				int i = boardLocation.i;
-				int j = boardLocation.j;
-
-				calculateLegalMoves(ref i, ref j, ref legalMoves, ref ph, 1, 1);  //if the NE space is empty
-				calculateLegalMoves(ref i, ref j, ref legalMoves, ref ph, 1, -1); //if the NW space is empty
-				if(ph.king == true){
-					calculateLegalMoves(ref i, ref j, ref legalMoves, ref ph, -1, 1);  //if the SE space is empty
-					calculateLegalMoves(ref i, ref j, ref legalMoves, ref  ph, -1, -1); //if the SW space is empty
-				}
-			}
-			selectedPiece = boardLocation;
-		}
-
-		currentLegalMoves = legalMoves;
-		displayLegalMoves(legalMoves);
-		return legalMoves;
-	}
 
 	//Looks at each diagonal movements and sees if it is a legal movement and adds it to a list of PieceMoves
 	public List<PieceMove> getLegalMoves(BoardLocation boardLocation){
@@ -163,7 +143,7 @@ public class BoardManager : NetworkBehaviour {
 			move.moveTo.piece = selectedPiece.piece;			
 			selectedPiece.piece = null;
 
-			toggleCurrentPlayer();
+			// toggleCurrentPlayer();
 
 		}	
 		//resets the board values.
@@ -236,7 +216,7 @@ public class BoardManager : NetworkBehaviour {
 		return x >= min && x < max; 
 	}
 
-	BoardLocation getLocation(string location){
+	public BoardLocation getLocation(string location){
 		//char letter = location[0];
 		int x = location[0] - 65;
 		int z = location[1] - 49;
