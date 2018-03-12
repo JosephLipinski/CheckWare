@@ -27,7 +27,7 @@ public class BoardManagerTest {
 		BM1 = gO.AddComponent<BoardManager>();
 		BM1.blueChecker = new GameObject ();
 		BM1.purpleChecker = new GameObject ();
-		BM1.setupBoard ();
+		BM1.CmdsetupBoard ();
 	}
 
 	[Test]

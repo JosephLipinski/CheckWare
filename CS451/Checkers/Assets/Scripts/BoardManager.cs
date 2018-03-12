@@ -17,12 +17,40 @@ public class BoardManager : NetworkBehaviour {
 
 	public GameObject blueChecker, blueKing, purpleChecker, purpleKing;
 
+	[Command]
+	public void CmdChangeTargetPosition(GameObject checker, Vector3 target)
+	{
+		checker.transform.position = target;
+		var objNetId = checker.GetComponent<NetworkIdentity> ();
+		//Debug.Log (checker);
+		objNetId.AssignClientAuthority (connectionToClient);
+		RpcChangeTrangsform (checker, target);
+		objNetId.RemoveClientAuthority (connectionToClient);
+	}
+
+	[ClientRpc]
+	void RpcChangeTrangsform(GameObject checker, Vector3 moveTo)
+	{
+		//Destroy (checker);
+		PieceHandler _ph  = checker.GetComponent<PieceHandler>();
+		_ph.Move (moveTo);
+
+		//Debug.Log ("ASSIGNED A VALUE");
+		//if (_ph == null) {
+		//	Debug.Log ("I'm null");
+		//} else {
+		//	Debug.Log ("I'm not null");
+		//}
+		//_ph.target = moveTo;
+	}
+
 	// Use this for initialization
 	void Start () {
-		setupBoard();
+		//Debug.Log ("I am here");
+		CmdsetupBoard();
 
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 
@@ -39,20 +67,21 @@ public class BoardManager : NetworkBehaviour {
 	// void RpcTogglePlease() {
 	// 	toggleCurrentPlayer();
 	// }
-	
+
 
 	//Maps 2d char array to a 2d list of BoardLocations that make up the board
-	public void setupBoard() {
+	[Command]
+	public void CmdsetupBoard() {
 
 		char[][] boardSetup = new char[][] {
-			new char[]{' ', '1', ' ', '1', ' ', ' ', ' ', ' '}, //A
-			new char[]{'1', ' ', '1', ' ', '1', ' ', '2', ' '}, //B
-			new char[]{' ', '1', ' ', '1', ' ', '1', ' ', '1'}, //C
-			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //D
+			new char[]{'1', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //A
+			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //B
+			new char[]{' ', ' ', ' ', ' ', ' ', '1', ' ', ' '}, //C
+			new char[]{' ', ' ', ' ', ' ', '2', ' ', ' ', ' '}, //D
 			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //E
-			new char[]{'2', ' ', '2', ' ', '2', ' ', '2', ' '}, //F
-			new char[]{' ', '2', ' ', '2', ' ', '2', ' ', '2'}, //G
-			new char[]{'2', ' ', '2', ' ', '2', ' ', '2', ' '}  //H
+			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //F
+			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}, //G
+			new char[]{' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '}  //H
 		};
 
 		board = new List<List<BoardLocation>>();
@@ -66,9 +95,11 @@ public class BoardManager : NetworkBehaviour {
 				if(boardSetup[i][j] == '1'){
 					GameObject P1_Piece = Instantiate (blueChecker, spawnPosition, Quaternion.identity);
 					board[i].Add(new BoardLocation(child, P1_Piece, i, j)); // stores cube location and player1 piece
+					NetworkServer.Spawn(P1_Piece);
 				} else if(boardSetup[i][j] == '2'){
 					GameObject P2_Piece = Instantiate (purpleChecker, spawnPosition, Quaternion.identity);
 					board[i].Add(new BoardLocation(child, P2_Piece, i, j)); // stores cube location and player2 piece
+					NetworkServer.Spawn(P2_Piece);
 				} else if(boardSetup[i][j] == ' '){
 					board[i].Add(new BoardLocation(child, i, j)); // stores each cube locaiton that is empty					
 				}
@@ -131,14 +162,24 @@ public class BoardManager : NetworkBehaviour {
 			//Kings piece
 			if(move.kingPiece){
 				selectedPiece.piece.GetComponent<PieceHandler>().king = true;
-                selectedPiece.piece.transform.GetChild(0).gameObject.active = true;
+				selectedPiece.piece.transform.GetChild(0).gameObject.active = true;
 			}
 
 
 			//Moves the piece
-			selectedPiece.piece.GetComponent<PieceHandler>().target = move.moveTo.boardLocation.transform.position;	
-			selectedPiece.piece.GetComponent<PieceHandler>().currentLerpTime = 0f;
+			//selectedPiece.piece.GetComponent<PieceHandler>().target = move.moveTo.boardLocation.transform.position;	
+			//selectedPiece.piece.GetComponent<PieceHandler>().currentLerpTime = 0f;
+			//selectedPiece.piece.transform = move.moveTo.boardLocation.transform.position;
+			Vector3 target = move.moveTo.boardLocation.transform.position;
+			//Debug.Log (target);
+			GameObject _checker = selectedPiece.piece;
+			//PieceHandler _ph = selectedPiece.piece.GetComponent<PieceHandler> ();
+			//_ph.PrintMe ();
 
+			_checker.GetComponent<PieceHandler>().Move(target);
+			_checker.transform.position = target;
+
+			CmdChangeTargetPosition (_checker, target);
 
 			//Reassigns reference
 			move.moveTo.piece = selectedPiece.piece;			
@@ -184,7 +225,7 @@ public class BoardManager : NetworkBehaviour {
 				}
 			}
 		}
-		
+
 	}
 
 	//Makes selected location show all legal moves in green
@@ -218,6 +259,7 @@ public class BoardManager : NetworkBehaviour {
 	}
 
 	public BoardLocation getLocation(string location){
+		//Debug.Log("here");
 		//char letter = location[0];
 		int x = location[0] - 65;
 		int z = location[1] - 49;
