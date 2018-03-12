@@ -14,11 +14,25 @@ public class PlayerMove : NetworkBehaviour
 	BoardManager bm;
 	Vector3 boardLoc;
 	string boardLocationName;
+	public Material blue;
+	public Material purple;
+	Color myColor, colorBlue, colorPurple;
 
 	public override void OnStartLocalPlayer()
 	{
-		GetComponent<MeshRenderer>().material.color = Color.red;
+		colorBlue = blue.color;
+		colorPurple = purple.color;
+
+		if (isServer) {
+			GetComponent<MeshRenderer> ().material.color = colorPurple;
+			myColor = colorPurple;
+		}
+		else {
+			GetComponent<MeshRenderer> ().material.color = colorBlue;
+			myColor = colorBlue;
+		}
 	}
+
 	void Start()
 	{
 
@@ -26,53 +40,58 @@ public class PlayerMove : NetworkBehaviour
 		bm = board.GetComponent<BoardManager>();
 		
 		if (isServer)
-			GetComponent<MeshRenderer>().material.color = Color.black;
+			GetComponent<MeshRenderer> ().material.color = blue.color;
+		else {
+			GetComponent<MeshRenderer> ().material.color = purple.color;
+
+		}
 	}
 
 	void Update()
 	{
 		if (!isLocalPlayer)
 			return;
-		//if (isClient)
+
+		if(bm.currentPlayer == true && myColor == colorBlue){
+			hoverOver();
+			leftClick();
+		} else if (bm.currentPlayer == false && myColor == colorPurple){
+			hoverOver();
+			leftClick();
+		}
 		
-		
-		//var x = Input.GetAxis("Horizontal")*0.1f;
-		//var z = Input.GetAxis("Vertical")*0.1f;
-		//transform.Translate(x, 0, z);
+	}
 
+	void hoverOver(){
 
-
-		//Gets raycast of mouse to look at Board layer. If it doesn't hit the board it gets location on a generated plane.  
 		ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-         if(Physics.Raycast(ray, out hit, 100, mask.value)) // mouse over
-         {
-	    	boardLoc = new Vector3(hit.collider.gameObject.transform.position.x, 0.25f,hit.collider.gameObject.transform.position.z);
-			 boardLocationName = hit.collider.name;	
-			 transform.position = Vector3.Lerp (transform.position, boardLoc, Time.deltaTime * smooth);		 
-         } else {
-			 Plane hPlane = new Plane(Vector3.up, Vector3.zero);
-			 float distance = 0; 
+		if(Physics.Raycast(ray, out hit, 100, mask.value)) // mouse over
+		{
+			boardLoc = new Vector3(hit.collider.gameObject.transform.position.x, 0.25f,hit.collider.gameObject.transform.position.z);
+			boardLocationName = hit.collider.name;	
+			transform.position = Vector3.Lerp (transform.position, boardLoc, Time.deltaTime * smooth);		 
+		} else {
+			Plane hPlane = new Plane(Vector3.up, Vector3.zero);
+			float distance = 0; 
 			if (hPlane.Raycast(ray, out distance)){
 				transform.position =  Vector3.Lerp (transform.position, ray.GetPoint(distance), Time.deltaTime * smooth);
-   			}
-		 }
-        	
-		 
+			}
+		}
+	}
 
-		 if (Input.GetMouseButtonDown(0)){ //left click
+	void leftClick(){
+		if (Input.GetMouseButtonDown(0)){ //left click
+			//Debug.Log(bm.currentPlayer);
 
 			//If you click one of your pieces
-			if(!bm.isLocationEmpty(boardLocationName)){
+			if(boardLocationName != null && !bm.isLocationEmpty(boardLocationName)){
 				bm.getLegalMoves(boardLocationName);
 			}
 
 			//If you click the green legal space 
-			if(bm.isCurrentLegalMove(boardLocationName)){
+			if(boardLocationName != null && bm.isCurrentLegalMove(boardLocationName)){
 				bm.movePiece(boardLocationName);
 			}
-		}
-
-		
-		
+		} 
 	}
 }

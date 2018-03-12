@@ -146,6 +146,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 2048
   smooth: 15
+  blue: {fileID: 2100000, guid: efc1392d244724aedbbb711accc515c7, type: 2}
+  purple: {fileID: 2100000, guid: 2a0ca877fd83a46a0937ddcf60cf50c5, type: 2}
 --- !u!114 &114991374343264064
 MonoBehaviour:
   m_ObjectHideFlags: 1

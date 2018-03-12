@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657898, g: 0.4964133, b: 0.5748178, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641234, b: 0.57481676, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -113,6 +113,43 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &37658059 stripped
+GameObject:
+  m_PrefabParentObject: {fileID: 1955477262058880, guid: a4aa8cc46ee10da45b718501a3fc6982,
+    type: 2}
+  m_PrefabInternal: {fileID: 152443786}
+--- !u!114 &37658062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 37658059}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 372142912, guid: dc443db3e92b4983b9738c1131f555cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SceneId:
+    m_Value: 0
+  m_AssetId:
+    i0: 164
+    i1: 170
+    i2: 140
+    i3: 196
+    i4: 110
+    i5: 225
+    i6: 13
+    i7: 164
+    i8: 91
+    i9: 113
+    i10: 133
+    i11: 1
+    i12: 163
+    i13: 252
+    i14: 105
+    i15: 130
+  m_ServerOnly: 0
+  m_LocalPlayerAuthority: 0
 --- !u!1001 &152443786
 Prefab:
   m_ObjectHideFlags: 0
@@ -459,8 +496,8 @@ Camera:
   m_GameObject: {fileID: 442234532}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.07958478, g: 0.33823532, b: 0.19909912, a: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
